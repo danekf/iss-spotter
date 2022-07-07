@@ -19,9 +19,32 @@
       
     }
     const data = JSON.parse(body); 
-    callback(error, data);
+    callback(error, data.ip);
 
  });
 }
 
-module.exports = { fetchMyIP };
+const fetchCoordsByIP = (ip, callback) => {
+  request("http://ipwho.is/"+ip, (error, response, body) => {
+    if(error){
+      return callback (error, null);
+    }
+    if(response.statusCode !== 200) {
+      return callback(Error(`Status Code ${response.statusCode} when fetching location: ${body}`), null);
+      
+    }
+    const data = JSON.parse(body); 
+    if(!data.success){
+      return callback(`Site reached but IP not found in database. IP may not be in correct format (IPv4 or IPv6). IP searched was ${ip}.`, null)
+    }
+    let latitude = data.latitude;
+    let longitude = data.longitude;
+    callback(error, {latitude, longitude});
+
+ });
+}
+
+module.exports = { 
+  fetchMyIP,
+  fetchCoordsByIP,
+};
