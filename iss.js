@@ -1,13 +1,4 @@
-/**
- * Makes a single API request to retrieve the user's IP address.
- * Input:
- *   - A callback (to pass back an error or the IP string)
- * Returns (via Callback):
- *   - An error, if any (nullable)
- *   - The IP address as a string (null if error). Example: "162.245.144.188"
- */
-
- const request = require('request');
+const request = require('request');
 
  const fetchMyIP = (callback) => { 
   request("https://api.ipify.org?format=json", (error, response, body) => {
@@ -63,6 +54,31 @@ const fetchISSFlyOverTimes = (coordinates, callback) =>{
  });
 }
 
+const nextISSTimesForMyLocation = (callback) => {
+  fetchMyIP((error, ip) =>{
+    if (error) {
+      console.log("Something went wrong fetching IP: ", error);
+      return;
+    }
+
+    fetchCoordsByIP(ip, (error, location) =>{
+      if (error) {
+        console.log("Something went wrong finding location of IP: ", error);
+        return;
+      }
+
+      fetchISSFlyOverTimes(location,(error, flyOver) =>{
+        if (error) {
+          console.log("Something went wrong finding ISS locations: ", error);
+          return;
+        }
+
+        callback(null, flyOver);
+
+      })
+    })
+  })
+};
 
 
 
@@ -71,5 +87,6 @@ module.exports = {
   fetchMyIP,
   fetchCoordsByIP,
   fetchISSFlyOverTimes,
+  nextISSTimesForMyLocation
 
 };
